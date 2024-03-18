@@ -1,0 +1,59 @@
+#docker-compose up으로 시작, down으로 종료
+
+#컴포즈 버전
+version: '3.8' 
+
+#사용되는 서비스 수 ( 컨테이너 수 )
+services:
+  mongodb: #1
+    container_name: mongodb #컨테이너의 이름을 지정할 수 있다. 안할시랜덤
+    image: 'mongo'
+    volumes:
+      - data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=max
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    #network : 도커 컴포즈에선 알아서 같은 네트워크에 넣어준다. 몰론 정의해도 무관
+    #networks: 
+    # - goals-net
+
+  backend: #2
+    container_name: goals-backend
+    build: ./backend #자동으로 이미지를 빌드해준다
+    #build:
+    #  context: ./backend
+    #  dockerfile: dockerfile
+    #  args:
+    #    some-arg: 1
+    ports:
+      - '80:80'
+    volumes:
+      - logs:/app/logs
+      - /app/node_modules
+      - ./backend:/app
+    env_file:
+      - ./env/backend.env
+    depends_on: #의존성. 아래 컨테이너가 실행중이여야만 이 컨테이너가 실행됌
+      - mongodb
+
+  frontend: #3
+    container_name: goals-frontend
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend/src:/app/src
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+
+
+#services와 같은 수준에 들여쓰기에 사용됨. 위에서 사용된 명명된 볼륨만 정의(익명, 바인드마운트는 제외)
+volumes: 
+  data:
+  logs:
+
+
+
+
