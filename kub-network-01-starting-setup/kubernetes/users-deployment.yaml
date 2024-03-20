@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users
+  template:
+    metadata:
+      labels:
+        app: users
+    spec:
+      containers:
+        - name: users
+          image: 00ehdcks/kub-demo-users:latest
+          env:
+            - name: AUTH_ADDRESS
+              #value: '10.96.243.20'
+              value: 'auth-service.default' #쿠버네티스의 내장 coreDNS기능 덕분에 가능하다
